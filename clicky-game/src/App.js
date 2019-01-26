@@ -1,65 +1,104 @@
-import React, { Component } from 'react';
-import cards from "./cards.json";
-import Scoreboard from "./components/Scoreboard";
-import Card from "./components/Card";
-import './App.css';
+import React, {Component} from "react";
+import Navbar from "./components/Navbar.js";
+import Header from "./components/Header";
+import Wrapper from "./components/Wrapper/Wrapper";
+import Characters from "./src/Characters.json";
+
+function shuffle(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+}
+
 
 class App extends Component {
 
   state = {
-    result: 1,
+    Characters,
     score: 0,
     topScore: 0,
-    characters: cards
+    showAlert: 0,
+    showSuccess: 0,
+    clickedCharacters: []
   };
 
-  componentDidMount() {
-    this.setNewRandomId(this.state.characters);
-  }
-
-  handleClicked = id => {
+  clickedImage = id => {
+    let clickedCharacters = this.state.clickedCharacters;
+    let score = this.state.score;
+    let topScore = this.state.topScore;
     this.setState({
-      topScore: this.state.topScore + 1
+      showAlert: 0
     });
-    if (this.state.result === id) {
+    
+    if (clickedCharacters.indexOf(id) === -1) {
+      clickedCharacters.push(id);
+      console.log(clickedCharacters);
+      this.handleIncrement();
+      this.makeShuffle();
+    } else if (this.state.score === 12) {
       this.setState({
-        score: this.state.score + 1
+        showSuccess: 1,
+        score: 0,
+        clickedCharacters: []
       });
-      this.setNewRandomId(this.state.characters);
+    } else {
+      this.setState({
+        score: 0,
+        clickedCharacters: []
+      });
+      console.log("duplicate")
+      this.setState({
+        showAlert: 1
+      });
+  
     }
+
+    if (score > topScore) {
+      this.setState({
+        topScore: score
+      })
+    } 
   }
 
-  setNewRandomId = (array) => {
-    const result = array[Math.floor(Math.random() * array.length)].id;
-    this.setState({
-      result: result
-    });
+  handleIncrement = () => {
+    this.setState({ score: this.state.score + 1 });
+  };
+
+  makeShuffle = () => {
+    this.setState({ Characters: shuffle(Characters) })
   }
+
 
   render() {
     return (
-      <div className="container">
-        <Scoreboard
-          title="Clicky Game Woot-Woot"
+      <div>
+        <Navbar
           score={this.state.score}
           topScore={this.state.topScore}
-          result={this.state.result}
         />
-        <div className="row">
-          {this.state.characters.map(characters => (
-            <Card
-              key={characters.id}
-              id={characters.id}
-              name={characters.name}
-              image={characters.image}
-              handleClicked={this.handleClicked}
+        <Header />
+        <div className="alert alert-danger" style={{opacity: this.state.showAlert}}>Sorry you clicked the same person twice, start over</div>
+        <div className="alert alert-success" style={{opacity: this.state.showSuccess }}>You win, you clicked each character with out clicking doubles</div>
+        <Wrapper>
+          {this.state.characters.map(character => (
+            <Characters 
+              key={character.id}
+              id={character.id}
+              name={character.name}
+              image={character.image}
+              clickedImage={this.clickedImage}
             />
           ))}
-     </div>
-     </div>
-        );
-      }
-    }
-    
-    export default App;
- 
+          
+        </Wrapper>
+
+
+        
+      </div>
+    )
+  }
+}
+
+export default App;
