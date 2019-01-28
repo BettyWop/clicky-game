@@ -1,103 +1,96 @@
-import React, {Component} from "react";
-import Navbar from "./components/Navbar.js";
-import Header from "./components/Header";
-import Wrapper from "./components/Wrapper/Wrapper";
-import Characters from "./src/Characters.json";
+import React, { Component } from 'react';
+import './App.css';
+import dogs from './dogs.json';
+import Score from './component/Score';
+import Dogs from './component/Dogs/index.js'
 
-function shuffle(array) {
+class App extends Component {
+state = {
+  result: "Begin Game!",
+  score: 0,
+  topScore: 0,
+  dogs: dogs,
+  numberOfDogs: dogs.length,
+  guessArray:[]
+}
+
+
+componentDidMount(){
+const newDogs = this.shuffleArray(dogs);
+this.setState({dogs: newDogs})
+console.log(this.state)
+}
+
+shuffleArray(array) {
   for (let i = array.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [array[i], array[j]] = [array[j], array[i]];
+    const j = Math.floor(Math.random() * (i + 1));
+    const temp = array[i];
+    array[i] = array[j];
+    array[j] = temp;
   }
   return array;
 }
 
-
-class App extends Component {
-
-  state = {
-    Characters,
-    score: 0,
-    topScore: 0,
-    showAlert: 0,
-    showSuccess: 0,
-    clickedCharacters: []
-  };
-
-  clickedImage = id => {
-    let clickedCharacters = this.state.clickedCharacters;
-    let score = this.state.score;
-    let topScore = this.state.topScore;
-    this.setState({
-      showAlert: 0
-    });
-    
-    if (clickedCharacters.indexOf(id) === -1) {
-      clickedCharacters.push(id);
-      console.log(clickedCharacters);
-      this.handleIncrement();
-      this.makeShuffle();
-    } else if (this.state.score === 12) {
+clickHandle = id => {
+  // is this picture is clicked before
+  const guessedBefore = this.state.guessArray.includes(id);
+  if(guessedBefore){
+    // check if user hit new top score
+    if(this.state.score > this.state.topScore){
       this.setState({
-        showSuccess: 1,
-        score: 0,
-        clickedCharacters: []
-      });
+        topScore: this.state.score,
+        score : 0,
+        result : "You have already clicked this one!"
+      })
+      this.shuffleArray(this.state.dogs)
     } else {
       this.setState({
-        score: 0,
-        clickedCharacters: []
-      });
-      console.log("duplicate")
-      this.setState({
-        showAlert: 1
-      });
-  
-    }
-
-    if (score > topScore) {
-      this.setState({
-        topScore: score
+        score : 0,
+        result : "You have already clicked this one!"
       })
-    } 
-  }
-
-  handleIncrement = () => {
-    this.setState({ score: this.state.score + 1 });
-  };
-
-  makeShuffle = () => {
-    this.setState({ Characters: shuffle(Characters) })
-  }
-
+      this.shuffleArray(this.state.dogs)
+    }
+   } // continue 
+  else {
+    if(this.state.score === (this.state.numberOfDogs-1)){
+      this.setState({
+        score: 0,
+        topScore: 0,
+        guessArray: [],
+        result: "Welcome back"
+      })
+      alert("You have hit the highest score! To play again close this window!")
+    }
+    this.setState({
+      score: this.state.score+1,
+      guessArray: [...this.state.guessArray, id],
+      result: "You guessed correctly!"
+    })
+    this.shuffleArray(this.state.dogs)
+  } 
+}
 
   render() {
     return (
-      <div>
-        <Navbar
-          score={this.state.score}
-          topScore={this.state.topScore}
+      <>
+      <Score result={this.state.result} 
+      score={this.state.score}
+      topScore={this.state.topScore}/>
+      <div className="container">
+      <div className="row">
+      {this.state.dogs.map(dogs => (
+        <Dogs 
+        key={dogs.id}
+        id={dogs.id}
+        image={dogs.image}
+        clickHandle={this.clickHandle}
         />
-        <Header />
-        <div className="alert alert-danger" style={{opacity: this.state.showAlert}}>Sorry you clicked the same person twice, start over</div>
-        <div className="alert alert-success" style={{opacity: this.state.showSuccess }}>You win, you clicked each character with out clicking doubles</div>
-        <Wrapper>
-          {this.state.characters.map(character => (
-            <Characters 
-              key={character.id}
-              id={character.id}
-              name={character.name}
-              image={character.image}
-              clickedImage={this.clickedImage}
-            />
-          ))}
-          
-        </Wrapper>
-
-
-        
+      ))}
       </div>
-    )
+      </div>
+   
+      </>
+    );
   }
 }
 
