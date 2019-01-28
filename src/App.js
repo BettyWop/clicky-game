@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import './App.css';
 import dogs from './dogs.json';
 import Score from './component/Score';
-import Dogs from './component/Dogs/index.js'
+import Dogs from './component/Dogs';
 
 class App extends Component {
 state = {

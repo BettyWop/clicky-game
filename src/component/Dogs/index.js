@@ -3,10 +3,10 @@ import "./dogs.css";
 
 function Dogs(props) {
    return (
-       <div style= {{backgroundImage: `url(${props.image})` }}
+       <img src={props.image}
        className="ppl col-md-4"
        onClick={() => props.clickHandle(props.id)}>
-       </div>
+       </img>
    ) 
 };
 
